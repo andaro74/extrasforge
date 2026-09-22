@@ -1,8 +1,8 @@
 # CLAUDE.md — extrasforge
 
-BDA describes the media; extrasforge proves which descriptions could only
-have reached the knowledge base by passing a rule a seat owns, and that
-an agent cannot state a generated description as fact.
+BDA describes the media; extrasforge shows that a description reaches
+the knowledge base only by passing a rule one named person owns, and
+that the agent cannot state a machine-written description as fact.
 
 SPEC/00-overview.md is the authority. If this file and SPEC/00 disagree,
 SPEC/00 wins and this file gets a PR.
@@ -60,7 +60,8 @@ the diff; you do not merge.
   `src/verdict/build.py` writes envelopes; only `src/verdict/gate.py`
   reads them; a test proves they can disagree.
 - Never touch `evals/goldens/`, `thresholds.yaml`, `rules/`,
-  `data/corpus/` or the guardrail/judge/model ids in `manifest.yaml`
+  `data/titles/`, `data/plants/` or the guardrail/judge/model ids in
+  `manifest.yaml`
   without naming the seat that owns the path and the ruling that
   authorises it. Propose the diff; the seat's PR carries it.
 - Never rename a golden id. Retire it.
@@ -122,14 +123,16 @@ changes. Every file on `main` has a seat; a file no seat owns is deleted.
 Call the seat subagent for the path you are changing before you open the
 PR; paste its report into the PR body. The `product-spec-reviewer` report
 goes into `milestones/MNN/feasibility.md` instead. Reports are drafts,
-never rulings. Specialists (`platform-architect`, `red-teamer`,
-`docs-writer`, `legal-compliance`, `incident-responder`) exist only from
-the milestone that added them; do not invoke one that is not in the tree.
+never rulings. Specialists (`bda-output-reviewer`, `rule-drafter`,
+`red-teamer`, `docs-writer`, and `platform-architect` per §8 M01) exist
+only from the milestone that added them; do not invoke one that is not
+in the tree.
 
-M00 only: PR 1 creates the seven seat subagents, so the "call before
-opening" rule is waived for the six it cannot yet call.
-`product-spec-reviewer` is written first and run against SPEC/00 before
-the rest of PR 1 is written.
+M00 only: `product-spec-reviewer` was written at the adoption PR and
+run against SPEC/00 (`milestones/adoption/spec00-review.md`). PR 1
+creates the other six seat subagents, so the "call before opening" rule
+is waived for the six it cannot yet call. `product-spec-reviewer` runs
+against SPEC/M00 before the rest of PR 1 is written.
 
 Skills: `/open-milestone`, `/close-milestone`, `/cold-review`. From M01
 on, a milestone opens and closes only through them.
@@ -159,7 +162,7 @@ thresholds.yaml       M03, Threshold Owner; two-key on any downward move; daily_
 ## Commands
 
 ```
-make evals            baseline, plus refagent from M01, against goldens, CI-equivalent
+make evals            baseline, plus search-media from M06, against goldens, CI-equivalent
 make evals-local      same, your credentials, writes evals/local/ only
 make validate         grows by milestone; the ledger header says what it
                       checked at each tag. M00: golden and ruling front

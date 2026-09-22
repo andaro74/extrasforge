@@ -1,10 +1,10 @@
-# SPEC/00 — Overview: governed media ingestion to agentic package curation
+# SPEC/00 — Overview: media ingestion under seat-owned rules, to agentic package curation
 
-Status: DRAFT (rev 2, pre-push: inference through AgentCore Gateway) ·
+Status: ADOPTED (rev 3; ADR-0001 with amendment 1 applied) ·
 Owner: Product seat · Rulings R1–R13 recorded at open ·
-N (review SLA) = 24 hours (R10) · To be adopted by ADR-0001 with
-amendment 1 (rulings applied at adoption) · Platform: agentkeel at a
-pinned tag (§13); this repo is a tenant of it, not a fork.
+N (review SLA) = 24 hours (R10) · Amended only by ADR ·
+Platform: agentkeel at tag `m00` (§13); this repo is a tenant of it,
+not a fork.
 
 ## 1. What this is
 
@@ -13,7 +13,7 @@ Bedrock Data Automation (BDA), decides **what BDA said that can be
 trusted**, indexes only that as fact in an Amazon Bedrock Knowledge
 Base, and lets a curator assemble a versioned extras package from one
 prompt through a Strands agent on AgentCore — with every hallucination
-control proved by a seeded error the gate must catch.
+control tested by a seeded error the gate must catch.
 
 BDA produces the outputs. This repo governs **what happens to them**:
 which outputs are evidence-bearing and which are generated; which
@@ -22,9 +22,9 @@ output's fate; what a reviewer decides and how that decision changes
 the golden set and the rulebook; and what the agent may state as fact.
 
 One sentence for the README: *BDA describes the media; extrasforge
-proves which descriptions could only have reached the knowledge base by
-passing a rule a seat owns, and that an agent cannot state a generated
-description as fact.*
+shows that a description reaches the knowledge base only by passing a
+rule one named person owns, and that the agent cannot state a
+machine-written description as fact.*
 
 ## 2. What it is not
 
@@ -34,7 +34,8 @@ description as fact.*
   controls around it; the repo does not tune BDA.
 - Not a governed-agent platform. That is agentkeel. This repo consumes
   its `GovernedAgent` construct, seat model, envelope schema and gates
-  at a pinned tag and adds nothing to them. One exception, stated: the
+  at a pinned tag and adds nothing to them but the envelope fields §6
+  lists, each by ADR. One further exception, stated: the
   model path is AgentCore Gateway inference targets (§9.7), not
   agentkeel's LLM-gateway alias; agentkeel adopts the same at its own
   upgrade milestone, never retrofitted here.
@@ -120,9 +121,10 @@ consumed at the pinned tag — plus one this repo adds from M04:
 
 ### 5.1 Subagents and specialists (`.claude/agents/`)
 
-Seven seat subagents, written at M00 PR 1, same names and duties as
-agentkeel's (`product-spec-reviewer` first, run against this SPEC before
-the rest of PR 1). Reports are drafts, never rulings.
+Seven seat subagents, same names and duties as agentkeel's:
+`product-spec-reviewer` at the adoption PR, run against this SPEC
+(`milestones/adoption/spec00-review.md`); the other six at M00 PR 1.
+Reports are drafts, never rulings.
 
 **Specialists (called by a seat; never rule; added by need, R8)**
 
@@ -155,7 +157,9 @@ decides; an agent reports.
 - **Job ledger** (DynamoDB from M01; `data/ledger/` fixtures at M00):
   one item per asset per run: `asset_id, title_id, run_id, state ∈
   {submitted, analysed, validated, indexed, quarantined, reviewed},
-  bda_project_version, rule_results[], bands{}, decision_ref`.
+  bda_project_version, rule_results[], bands{}, decision_ref`. Terminal
+  states: `analysed` at M01; `indexed` and `quarantined` from M04;
+  `reviewed` from M05. Every other state is non-terminal.
 - **Rulebook** (`rules/*.yaml`): `id` (immutable), `family ∈
   {schema, referential, temporal, cross_output, business}`, `field`,
   `severity ∈ {fail, warn}`, `owner`, `rationale`, `planted_error`
@@ -164,7 +168,8 @@ decides; an agent reports.
 - **Planted-error register** (`data/plants/register.yaml`, Data
   Owner): `id` (`e-NNN`), `kind ∈ {wrong_person, invented_character,
   timestamp_past_duration, overlap, wrong_title_card, spoiler_term,
-  wrong_language, runaway_summary, wrong_title_prefix, injection}`,
+  wrong_language, runaway_summary, wrong_title_prefix, injection,
+  wrong_speaker, placeholder}`,
   `asset_id`, `field`, `truth`, `planted`, `catching_layer_expected ∈
   {rule, entailment, confidence, review}`, `added`, `retired`.
 - **Golden** (`evals/goldens/v1/g-NNN.yaml`): `id` (immutable, R11),
@@ -173,9 +178,11 @@ decides; an agent reports.
   `asset_ids[]`, `cited_timestamps[]`; leak: `BLOCKED`; guardrail:
   `BLOCKED|MASKED`; redteam: `BLOCKED`), `seat`, `added`, `retired`.
 - **Envelope**: agentkeel's `verdict.schema.json` at the pinned tag,
-  extended by ADR at M04 with `scope ∈ {control, pipeline, agent}`,
-  `plants_expected`, `plants_fired`, `catch_rate`, `catch_by_layer{}`,
-  `calibration{field: ece}`, and `checks` keyed by falsifier id.
+  extended by ADR at M00 PR 1 (the copy in `src/verdict/schema.json`)
+  with `scope ∈ {control, pipeline, agent}`, `plants_expected`,
+  `plants_fired` and `checks` keyed by falsifier id; at M03 with
+  `calibration{field: ece}`; at M04 with `catch_rate` and
+  `catch_by_layer{}`. Each extension is an ADR naming the milestone.
 - **Decision** (`data/decisions/d-NNNN.yaml`, written by the review
   CLI): `queue_item, asset_id, field, proposed, decision ∈ {confirm,
   correct, reject_rerun, escalate}, value, reason_code, reviewer_seat,
@@ -204,10 +211,13 @@ Cap four PRs each. PR 1 always: SPEC/NN, `milestones/MNN/feasibility.md`,
 ledger row on open, seeded false state planted, explainer draft. Every PR
 ends with a ruling file at `milestones/MNN/rulings/<slug>.md`; a PR
 touching the milestone's build paths cites `SPEC/00-overview.md#8-MNN`.
-Measurement lands by PR 2. Eight milestones, at most 32 PRs. **Cut
-list for the interview deadline (R12): M00–M04 and M06 are the set;
-M05 may close on the CLI alone; M07 may close as a written drill with
-one measured swap.**
+Measurement lands by PR 2. Each SPEC/NN PR 1 adds the milestone's
+Done-when line to §8 MNN by ADR: one plain clause first, the measured
+line under it. Eight milestones, at most 32 PRs. **Cut list for the
+interview deadline (R12), in the order cut: 1. M07 closes as a written
+drill with one measured swap, the breaking swap (F7.1); F7.2 and F7.3
+are recorded RED-by-cut in its ledger row. 2. M05 closes on the CLI
+alone; F5.3 is recorded RED-by-cut. M00–M04 and M06 are never cut.**
 
 ### M00 — Naive control and ledger
 Build: `src/baseline/` — the naive pipeline as the control: takes a raw
@@ -232,8 +242,9 @@ error, two clean), 5 query, 3 leak. `verdict.schema.json` consumed from
 agentkeel at the pinned tag; `verdict.build`, `verdict.gate` (with the
 plant rule as one line at PR 2); the ledger; `replay_history`. `Makefile`
 with all five targets: at PR 1 `evals-local` and `validate` run
-(`validate` checks golden, rule and ruling front matter and that every
-`planted_error` id in a rule exists in the register) and `evals`,
+(`validate` checks golden and ruling front matter; from M04 also rule
+front matter and that every `planted_error` id in a rule exists in the
+register) and `evals`,
 `plants`, `ledger` exit 1 with "not until M00 PR 2". The seven seat
 subagents, `product-spec-reviewer` first. `cold-review-ruling` required
 from PR 2 (R9). This SPEC/00 and R1–R12, recorded by ADR-0001. ADR-0002
@@ -252,13 +263,17 @@ and `never_passed`, `plants_expected = 0` under the plant rule. Every
 result is `scope: control`, so `regressed` is 0 by construction and
 `checks.F0_2` and `checks.F0_3` decide the verdict.
 Falsifiers: F0.2 an envelope validates without a control card ref. F0.3
-a PR merges without a ruling file after PR 2.
+a PR merges without a ruling file after PR 2. F0.4 a commit after tag
+`m00` changes `src/baseline/**` and `validate` is GREEN; from the M00
+close PR `validate` compares the tree hash of `src/baseline/**` to the
+one ADR-0002 records.
 Finding F0.1 (not a falsifier): a planted error that the naive control
 happens not to index (a malformed fixture the flat writer drops). Record
 it; do not fix the plant in this milestone.
-Done when: `make evals` writes an envelope with the control card and the
-row 0 measured value (`plants_through 10/10; cites 0/5; leak 0/3
-never_passed`) in `milestones/README.md`.
+Done when: the naive pipeline let all 10 planted errors through and
+cited nothing. In the ledger: `make evals` writes an envelope with the
+control card and row 0 in `milestones/README.md` reads `plants_through
+10/10; cites 0/5; leak 0/3 never_passed`.
 
 ### M01 — Ingest and ledger
 Build: S3 prefix per title; Cognito groups → prefix policy (Security);
@@ -295,8 +310,9 @@ calibration error on the envelope; `thresholds.yaml` bands per field
 set from the curves (Threshold Owner) with review capacity as a stated
 input; entailment check (summary vs transcript + OCR) scored against the
 labels. Adds `docs-writer`.
-Seeded: a blueprint revision that raises a field's confidence without
-raising its accuracy; a band set at 0.7 on a field whose curve says 0.85.
+Seeded: a fixture copy under `tests/fixtures/plants/` with one field's
+confidence values raised and its labels unchanged, standing in for a
+blueprint revision; a band set at 0.7 on a field whose curve says 0.85.
 Falsifiers: F3.1 the revision is GREEN. F3.2 a band below its curve's
 point passes `validate`. F3.3 the entailment check scores above its bar
 on a summary the labels say is wrong.
@@ -306,7 +322,7 @@ Build: `rules/` with the five families (§9.3), tests per rule including
 its `planted_error`; `validate` requires every rule to name a register
 id and every register id to be named by a rule, an entailment case or a
 review case; three-band triage in `src/triage/` (verified / queue /
-quarantine, re-run with the strict blueprint); `catch-rate` gate; index
+quarantine); `catch-rate` gate; index
 writer that refuses a field with no provenance. Adds `rule-drafter`.
 Seeded: the ten planted errors from M00, now with the controls in the
 tree so they are plants, not never-passed goldens; an eleventh with no
@@ -472,10 +488,12 @@ that returned nothing).
 - **R12 — fictional slate, stand-in footage, interview cut list.** No
   real title, cast, contract or studio workflow detail in the repo;
   footage is CC-BY open-movie content with title cards trimmed and
-  fictional cards rendered on. The milestone set for the interview
-  deadline is M00–M04 and M06; M05 may close on the CLI, M07 as a
-  written drill with one measured swap. A milestone cut this way is
-  closed GREEN only on what it measured, and its explainer says so.
+  fictional cards rendered on. The cut order for the interview
+  deadline: 1. M07 closes as a written drill with one measured swap,
+  the breaking swap (F7.1), with F7.2 and F7.3 recorded RED-by-cut in
+  its ledger row; 2. M05 closes on the CLI alone, with F5.3 recorded
+  RED-by-cut. M00–M04 and M06 are never cut. A milestone cut this way
+  is closed GREEN only on what it measured, and its explainer says so.
 
 ## 12. Deferred (named so they are not assumed)
 - Package assembler agent (rights quotas, territory packaging).
@@ -505,8 +523,10 @@ that returned nothing).
 | GitHub Actions | gates, CI reviewer agents | policy source of truth |
 
 ## 14. Cost
-BDA calls confined to the four M00 fixtures (by hand), M02's library
-build (once), M03's golden labelling run (once) and M07's swap (once).
+BDA calls confined to the four M00 fixtures (by hand), M01's pipeline
+runs on those four (once per seeded case), M02's library build (once),
+M03's golden labelling run (once), M04's strict re-runs on quarantined
+fixtures, and M07's swap (once).
 Model calls confined to `make evals` and M06. Target under $100 total
 on top of agentkeel's own spend. From M06 the interceptor ledger is the
 source for this number; the M06 explainer reports spend from it.
