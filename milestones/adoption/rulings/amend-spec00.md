@@ -1,5 +1,5 @@
 ---
-ruling: DRAFT
+ruling: amend-spec00
 seat: Product
 authorises:
   - SPEC/00-overview.md
