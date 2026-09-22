@@ -1,5 +1,5 @@
 ---
-ruling: DRAFT
+ruling: adopt-spec00
 seat: Product
 authorises:
   - SPEC/00-overview.md
