@@ -1,0 +1,11 @@
+# NOTICE
+
+extrasforge is MIT-licensed (see LICENSE). The stand-in media under
+tests/fixtures/ and data/media/ is not covered by that licence. Each item
+is CC-BY open-movie content, credited below at the PR that adds it, with
+original title cards and credits trimmed. The titles, cast, characters,
+crew, contracts and rights in data/ are invented (SPEC/00 R12).
+
+## Attributions
+
+<!-- one line per item: path | work | creator | licence | source URL | trim applied -->

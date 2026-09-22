@@ -1,0 +1,25 @@
+[project]
+name = "extrasforge"
+version = "0.0.0"
+description = "Governed media ingestion on Amazon Bedrock Data Automation; a tenant of agentkeel."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Hector Flores Acevedo" }]
+dependencies = [
+  "boto3>=1.35",
+  "pyyaml>=6.0",
+  "jsonschema>=4.23",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
